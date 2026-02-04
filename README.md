@@ -1,0 +1,1 @@
+# project-kubernetes-localstack
