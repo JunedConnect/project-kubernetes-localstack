@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "my-app"
+version = "1.1.0"
+description = "This is my app"
+authors = ["Juned Ahmed"]
+packages = [{ include = "my_app" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+Flask = "^2.2.3"
+flask-swagger-ui = "^4.11.1"
+awscli-local = "^0.22.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+mypy = "^1.10.1"
+ruff = "^0.1.0"
+pulumi-local = "^1.2.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

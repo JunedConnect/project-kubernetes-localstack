@@ -1,0 +1,40 @@
+# Stage 1
+
+# # image being used is python:3.10-alpine
+FROM python@sha256:396410c739456800dd74a886783c6b77ba1121e6ca137463414b905f3a65df95 AS builder
+
+WORKDIR /install
+
+RUN pip install --no-cache-dir poetry
+
+COPY poetry.toml pyproject.toml ./
+
+COPY ./my_app/ ./my_app/
+
+RUN poetry install --without dev
+
+
+# Stage 2
+
+# image being used is python:3.10-alpine
+FROM python@sha256:396410c739456800dd74a886783c6b77ba1121e6ca137463414b905f3a65df95
+
+WORKDIR /app
+
+COPY --from=builder /usr/local/bin/poetry /usr/local/bin/poetry
+
+COPY --from=builder /usr/local/lib/python3.10/site-packages/ /usr/local/lib/python3.10/site-packages/
+
+COPY --from=builder /install .
+
+COPY ./my_app/ ./my_app/
+
+WORKDIR /app/my_app
+
+RUN adduser -D dockeruser
+
+RUN chown -R dockeruser .
+
+USER dockeruser
+
+CMD [ "poetry", "run", "python", "app.py" ]
