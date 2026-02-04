@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{ .Values.strategy.maxSurge }}
+      maxUnavailable: {{ .Values.strategy.maxUnavailable }}
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      securityContext:
+        fsGroup: {{ .Values.podSecurityContext.fsGroup }}
+        runAsNonRoot: {{ .Values.podSecurityContext.runAsNonRoot }}
+        runAsUser: {{ .Values.podSecurityContext.runAsUser }}
+      containers:
+      - name: my-app
+        image: "my-app:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: {{ .Values.securityContext.runAsNonRoot }}
+          runAsUser: {{ .Values.securityContext.runAsUser }}
+          allowPrivilegeEscalation: {{ .Values.securityContext.allowPrivilegeEscalation }}
+          capabilities:
+            drop:
+            {{- range .Values.securityContext.capabilities.drop }}
+              - {{ . }}
+            {{- end }}
+        ports:
+        - containerPort: 5000
+        livenessProbe:
+          httpGet:
+            path: /swagger/
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 10
+          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            path: /users
+            port: 5000
+          initialDelaySeconds: 45 # long delay as pod needs to start up
+          periodSeconds: 10
+          timeoutSeconds: 10
+          failureThreshold: 5
+        resources:
+          requests:
+            memory: {{ .Values.resources.requests.memory }}
+            cpu: {{ .Values.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.resources.limits.memory }}
+            cpu: {{ .Values.resources.limits.cpu }}
+        env:
+        - name: LOCALSTACK_HOST
+          value: "{{ .Values.env.localstack_host }}"
+        - name: S3_BUCKET
+          value: "{{ .Values.env.s3_bucket }}"
+        - name: DYNAMODB_TABLE
+          value: "{{ .Values.env.dynamodb_table }}"
+        - name: AWS_REGION
+          value: "{{ .Values.env.aws_region }}"
+        - name: AWS_ACCESS_KEY_ID
+          value: "{{ .Values.env.aws_access_key_id }}"
+        - name: AWS_SECRET_ACCESS_KEY
+          value: "{{ .Values.env.aws_secret_access_key }}"

@@ -1,0 +1,47 @@
+replicaCount: 3
+
+image:
+  pullPolicy: Never
+  tag: "latest"
+
+strategy:
+  maxSurge: 1
+  maxUnavailable: 0
+
+service:
+  nodePort: 30080
+
+pdb:
+  minAvailable: 1
+
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+
+autoscaling:
+  minReplicas: 3
+  maxReplicas: 10
+
+env:
+  localstack_host: http://host.docker.internal:4566
+  s3_bucket: my-app-bucket
+  dynamodb_table: my-app-table
+  aws_region: eu-west-2
+  aws_access_key_id: test
+  aws_secret_access_key: test
